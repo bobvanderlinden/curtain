@@ -54,6 +54,14 @@ void digitalPulse(int port) {
   delay(250);
 }
 
+void handleMessageRequest(AsyncWebServerRequest *request, Message message) {
+  if (pushMessage(message)) {
+    request->send(200, "text/plain", "ok");
+  } else {
+    request->send(429, "text/plain", "too many requests");
+  }
+}
+
 void setup() {
   Serial.begin(115200);
   pinMode(BUILTIN_LED, OUTPUT);
@@ -99,18 +107,15 @@ void setup() {
 
   // Setup HTTP
   server.on("/open", HTTP_GET, [](AsyncWebServerRequest *request){
-    pushMessage(MESSAGE_OPEN);
-    request->send(200, "text/plain", "ok");
+    handleMessageRequest(request, MESSAGE_OPEN);
   });
 
   server.on("/close", HTTP_GET, [](AsyncWebServerRequest *request){
-    pushMessage(MESSAGE_CLOSE);
-    request->send(200, "text/plain", "ok");
+    handleMessageRequest(request, MESSAGE_CLOSE);
   });
 
   server.on("/stop", HTTP_GET, [](AsyncWebServerRequest *request){
-    pushMessage(MESSAGE_STOP);
-    request->send(200, "text/plain", "ok");
+    handleMessageRequest(request, MESSAGE_STOP);
   });
 
   server.begin();
