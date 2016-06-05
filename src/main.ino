@@ -4,12 +4,17 @@
 
 void setup() {
   Serial.begin(115200);
+  pinMode(BUILTIN_LED, OUTPUT);
+
   Serial.println("       ");
 
   Serial.print("Connecting");
   while (WiFi.begin("***", "***") != WL_CONNECTED) {
     Serial.print(".");
-    delay(100);
+    digitalWrite(BUILTIN_LED, 1);
+    delay(90);
+    digitalWrite(BUILTIN_LED, 0);
+    delay(10);
   }
   Serial.println();
 
@@ -27,6 +32,7 @@ void setup() {
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+    digitalWrite(BUILTIN_LED, progress % 3);
   });
   ArduinoOTA.onError([](ota_error_t error) {
     Serial.printf("Error[%u]: ", error);
@@ -40,7 +46,7 @@ void setup() {
 
   Serial.println("Ready");
 
-  pinMode(BUILTIN_LED, OUTPUT);  // initialize onboard LED as output
+  digitalWrite(BUILTIN_LED, 0);
 }
 
 void loop() {
