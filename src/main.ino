@@ -1,6 +1,58 @@
+#include <Arduino.h>
+#include <Hash.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <ArduinoOTA.h>
+#include <ESPAsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+
+AsyncWebServer server(80);
+
+typedef enum {
+  MESSAGE_OPEN,
+  MESSAGE_CLOSE,
+  MESSAGE_STOP
+} Message;
+
+int readMessageIndex = 0;
+int writeMessageIndex = 0;
+const int maxMessageCount = 8;
+Message messageBuffer[maxMessageCount];
+
+bool popMessage(Message *message) {
+  noInterrupts();
+  bool hasMessages = readMessageIndex != writeMessageIndex;
+  if (hasMessages) {
+    *message = messageBuffer[readMessageIndex];
+    readMessageIndex = (readMessageIndex + 1) % maxMessageCount;
+  }
+  interrupts();
+  return hasMessages;
+}
+
+bool pushMessage(Message message) {
+  noInterrupts();
+  int nextMessageIndex = (writeMessageIndex + 1) % maxMessageCount;
+  bool canWrite = nextMessageIndex != readMessageIndex;
+  if (canWrite) {
+    messageBuffer[writeMessageIndex] = message;
+    writeMessageIndex = nextMessageIndex;
+  }
+  interrupts();
+  return canWrite;
+}
+
+void digitalPulse(int port) {
+  Serial.print("digitalPulse ");
+  Serial.println(port);
+
+  digitalWrite(BUILTIN_LED, 1);
+  digitalWrite(port, 1);
+  delay(250);
+  digitalWrite(BUILTIN_LED, 0);
+  digitalWrite(port, 0);
+  delay(250);
+}
 
 void setup() {
   Serial.begin(115200);
@@ -23,6 +75,7 @@ void setup() {
   Serial.print("localIP: ");
   Serial.println(WiFi.localIP());
 
+  // Setup OTA
   ArduinoOTA.setHostname("curtain");
   ArduinoOTA.onStart([]() {
     Serial.println("Start");
@@ -44,11 +97,53 @@ void setup() {
   });
   ArduinoOTA.begin();
 
-  Serial.println("Ready");
+  // Setup HTTP
+  server.on("/open", HTTP_GET, [](AsyncWebServerRequest *request){
+    pushMessage(MESSAGE_OPEN);
+    request->send(200, "text/plain", "ok");
+  });
 
+  server.on("/close", HTTP_GET, [](AsyncWebServerRequest *request){
+    pushMessage(MESSAGE_CLOSE);
+    request->send(200, "text/plain", "ok");
+  });
+
+  server.on("/stop", HTTP_GET, [](AsyncWebServerRequest *request){
+    pushMessage(MESSAGE_STOP);
+    request->send(200, "text/plain", "ok");
+  });
+
+  server.begin();
+
+  // Setup pins
+  pinMode(D1, OUTPUT);
+  pinMode(D2, OUTPUT);
+  pinMode(D3, OUTPUT);
+
+  // Initialize pins
   digitalWrite(BUILTIN_LED, 0);
+  digitalWrite(D1, 0);
+  digitalWrite(D2, 0);
+  digitalWrite(D3, 0);
+
+  Serial.println("Ready");
 }
 
 void loop() {
   ArduinoOTA.handle();
+
+  Message message;
+  if (popMessage(&message)) {
+    switch(message) {
+      case MESSAGE_OPEN:
+        digitalPulse(D1);
+        break;
+      case MESSAGE_CLOSE:
+        digitalPulse(D2);
+        break;
+      case MESSAGE_STOP:
+        digitalPulse(D3);
+        break;
+    }
+  }
 }
