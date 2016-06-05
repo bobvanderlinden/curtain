@@ -43,9 +43,6 @@ bool pushMessage(Message message) {
 }
 
 void digitalPulse(int port) {
-  Serial.print("digitalPulse ");
-  Serial.println(port);
-
   digitalWrite(BUILTIN_LED, 1);
   digitalWrite(port, 1);
   delay(250);
@@ -141,12 +138,15 @@ void loop() {
   if (popMessage(&message)) {
     switch(message) {
       case MESSAGE_OPEN:
+        Serial.println("Open");
         digitalPulse(D1);
         break;
       case MESSAGE_CLOSE:
+        Serial.println("Close");
         digitalPulse(D2);
         break;
       case MESSAGE_STOP:
+        Serial.println("Stop");
         digitalPulse(D3);
         break;
     }
