@@ -86,13 +86,13 @@ void setup() {
   // Setup OTA
   ArduinoOTA.setHostname("curtain");
   ArduinoOTA.onStart([]() {
-    Serial.println("Start");
+    Serial.println("Start OTA...");
   });
   ArduinoOTA.onEnd([]() {
-    Serial.println("\nEnd");
+    Serial.println("\nEnd OTA");
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+    Serial.printf("OTA Progress: %u%%\r", (progress / (total / 100)));
     digitalWrite(BUILTIN_LED, progress % 3);
   });
   ArduinoOTA.onError([](ota_error_t error) {
