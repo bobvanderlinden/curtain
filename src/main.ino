@@ -14,6 +14,11 @@ typedef enum {
   MESSAGE_STOP
 } Message;
 
+const int PIN_OPEN = D6;
+const int PIN_CLOSE = D7;
+const int PIN_STOP = D8;
+const int PIN_STATUS_LED = BUILTIN_LED;
+
 int readMessageIndex = 0;
 int writeMessageIndex = 0;
 const int maxMessageCount = 8;
@@ -43,11 +48,11 @@ bool pushMessage(Message message) {
 }
 
 void digitalPulse(int port) {
-  digitalWrite(BUILTIN_LED, 1);
-  digitalWrite(port, 1);
-  delay(250);
-  digitalWrite(BUILTIN_LED, 0);
+  digitalWrite(PIN_STATUS_LED, 1);
   digitalWrite(port, 0);
+  delay(250);
+  digitalWrite(PIN_STATUS_LED, 0);
+  digitalWrite(port, 1);
   delay(250);
 }
 
@@ -61,16 +66,16 @@ void handleMessageRequest(AsyncWebServerRequest *request, Message message) {
 
 void setup() {
   Serial.begin(115200);
-  pinMode(BUILTIN_LED, OUTPUT);
+  pinMode(PIN_STATUS_LED, OUTPUT);
 
   Serial.println("       ");
 
   Serial.print("Connecting");
   while (WiFi.begin("***", "***") != WL_CONNECTED) {
     Serial.print(".");
-    digitalWrite(BUILTIN_LED, 1);
+    digitalWrite(PIN_STATUS_LED, 1);
     delay(90);
-    digitalWrite(BUILTIN_LED, 0);
+    digitalWrite(PIN_STATUS_LED, 0);
     delay(10);
   }
   Serial.println();
@@ -90,7 +95,7 @@ void setup() {
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
     Serial.printf("OTA Progress: %u%%\r", (progress / (total / 100)));
-    digitalWrite(BUILTIN_LED, progress % 3);
+    digitalWrite(PIN_STATUS_LED, progress % 3);
   });
   ArduinoOTA.onError([](ota_error_t error) {
     Serial.printf("Error[%u]: ", error);
@@ -118,15 +123,15 @@ void setup() {
   server.begin();
 
   // Setup pins
-  pinMode(D1, OUTPUT);
-  pinMode(D2, OUTPUT);
-  pinMode(D3, OUTPUT);
+  pinMode(PIN_OPEN, OUTPUT);
+  pinMode(PIN_CLOSE, OUTPUT);
+  pinMode(PIN_STOP, OUTPUT);
 
   // Initialize pins
-  digitalWrite(BUILTIN_LED, 0);
-  digitalWrite(D1, 0);
-  digitalWrite(D2, 0);
-  digitalWrite(D3, 0);
+  digitalWrite(PIN_STATUS_LED, 0);
+  digitalWrite(PIN_OPEN, 1);
+  digitalWrite(PIN_CLOSE, 1);
+  digitalWrite(PIN_STOP, 1);
 
   Serial.println("Ready");
 }
@@ -139,15 +144,15 @@ void loop() {
     switch(message) {
       case MESSAGE_OPEN:
         Serial.println("Open");
-        digitalPulse(D1);
+        digitalPulse(PIN_OPEN);
         break;
       case MESSAGE_CLOSE:
         Serial.println("Close");
-        digitalPulse(D2);
+        digitalPulse(PIN_CLOSE);
         break;
       case MESSAGE_STOP:
         Serial.println("Stop");
-        digitalPulse(D3);
+        digitalPulse(PIN_STOP);
         break;
     }
   }
