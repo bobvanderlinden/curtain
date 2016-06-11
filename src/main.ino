@@ -133,6 +133,8 @@ void setup() {
   digitalWrite(PIN_CLOSE, 1);
   digitalWrite(PIN_STOP, 1);
 
+  MDNS.addService("http", "tcp", 80);
+
   Serial.println("Ready");
 }
 
