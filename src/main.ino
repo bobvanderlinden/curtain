@@ -15,8 +15,8 @@ typedef enum {
 } Message;
 
 const int PIN_OPEN = D6;
-const int PIN_CLOSE = D7;
-const int PIN_STOP = D8;
+const int PIN_CLOSE = D5;
+const int PIN_STOP = D7;
 const int PIN_STATUS_LED = BUILTIN_LED;
 
 int readMessageIndex = 0;
