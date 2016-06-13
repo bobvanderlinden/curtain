@@ -6,6 +6,8 @@
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
+const char *wifi_ssid = "***";
+const char *wifi_password = "***";
 const char *hostName = "curtain";
 
 AsyncWebServer server(80);
@@ -73,8 +75,8 @@ void setup() {
   Serial.println("       ");
 
   Serial.print("Connecting");
-  while (WiFi.begin("***", "***") != WL_CONNECTED) {
   WiFi.hostname(hostName);
+  while (WiFi.begin(wifi_ssid, wifi_password) != WL_CONNECTED) {
     Serial.print(".");
     digitalWrite(PIN_STATUS_LED, 1);
     delay(90);
