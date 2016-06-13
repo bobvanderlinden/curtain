@@ -6,6 +6,8 @@
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
+const char *hostName = "curtain";
+
 AsyncWebServer server(80);
 
 typedef enum {
@@ -72,6 +74,7 @@ void setup() {
 
   Serial.print("Connecting");
   while (WiFi.begin("***", "***") != WL_CONNECTED) {
+  WiFi.hostname(hostName);
     Serial.print(".");
     digitalWrite(PIN_STATUS_LED, 1);
     delay(90);
@@ -86,7 +89,7 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   // Setup OTA
-  ArduinoOTA.setHostname("curtain");
+  ArduinoOTA.setHostname(hostName);
   ArduinoOTA.onStart([]() {
     Serial.println("Start OTA...");
   });
