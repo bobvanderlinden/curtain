@@ -68,12 +68,7 @@ void handleMessageRequest(AsyncWebServerRequest *request, Message message) {
   }
 }
 
-void setup() {
-  Serial.begin(115200);
-  pinMode(PIN_STATUS_LED, OUTPUT);
-
-  Serial.println("       ");
-
+void wifiConnect() {
   Serial.print("Connecting");
   WiFi.hostname(hostName);
   WiFi.setAutoReconnect(true);
@@ -90,6 +85,15 @@ void setup() {
 
   Serial.print("localIP: ");
   Serial.println(WiFi.localIP());
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(PIN_STATUS_LED, OUTPUT);
+
+  Serial.println("       ");
+
+  wifiConnect();
 
   // Setup OTA
   ArduinoOTA.setHostname(hostName);
@@ -163,5 +167,9 @@ void loop() {
         digitalPulse(PIN_STOP);
         break;
     }
+  }
+
+  if (WiFi.status() != WL_CONNECTED) {
+    wifiConnect();
   }
 }
