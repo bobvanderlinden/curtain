@@ -72,7 +72,8 @@ void wifiConnect() {
   Serial.print("Connecting");
   WiFi.hostname(hostName);
   WiFi.setAutoReconnect(true);
-  while (WiFi.begin(wifi_ssid, wifi_password) != WL_CONNECTED) {
+  WiFi.begin(wifi_ssid, wifi_password);
+  while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
     digitalWrite(PIN_STATUS_LED, 1);
     delay(90);
